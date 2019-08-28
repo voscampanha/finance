@@ -12,7 +12,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.hateoas.Identifiable;
 
 @Entity
-@Table(name = "users")
+@Table(name = "accounts")
 @EntityListeners(AuditingEntityListener.class)
 public class Account implements Identifiable<Long> {
 	
