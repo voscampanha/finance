@@ -1,10 +1,11 @@
 # finance
 
-REST API Java for a financial application\n
+REST API Java for a financial application
 
-* RMM -HATEOS 
+* RMM - HATEOS level
 * Swagger 
 * Spring Boot 
-* Maven Postgresql
+* Maven 
+* Postgresql
 
 https://financevos.herokuapp.com/swagger-ui.html
