@@ -1,5 +1,7 @@
 package com.finance.entities;
 
+import java.util.Objects;
+
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
@@ -29,6 +31,31 @@ public class Account implements Identifiable<Long> {
 	@NotNull
 	private String owner;
 
+	private Account() {}
+
+	public Account(String name, int priority, String owner) {
+		this.name = name;
+		this.priority = priority;
+		this.owner = owner;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Account account = (Account) o;
+		return Objects.equals(id, account.id) &&
+			Objects.equals(name, account.name) &&
+			Objects.equals(priority, account.priority) &&
+			Objects.equals(owner, account.owner);
+	}
+
+	@Override
+	public int hashCode() {
+
+		return Objects.hash(id, name, priority, owner);
+	}
+	
 	public Long getId() {
 		return id;
 	}
@@ -59,5 +86,15 @@ public class Account implements Identifiable<Long> {
 
 	public void setOwner(String owner) {
 		this.owner = owner;
+	}
+	
+	@Override
+	public String toString() {
+		return "Account{" +
+			"id=" + id +
+			", name='" + name + '\'' +
+			", priority='" + priority + '\'' +
+			", owner='" + owner + '\'' +
+			'}';
 	}
 }
