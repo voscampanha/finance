@@ -8,10 +8,13 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.hateoas.Identifiable;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "accounts")
@@ -30,6 +33,8 @@ public class Account implements Identifiable<Long> {
 	
 	@NotNull
 	private String owner;
+	
+	private @Version @JsonIgnore Long version;
 
 	private Account() {}
 
@@ -47,13 +52,14 @@ public class Account implements Identifiable<Long> {
 		return Objects.equals(id, account.id) &&
 			Objects.equals(name, account.name) &&
 			Objects.equals(priority, account.priority) &&
-			Objects.equals(owner, account.owner);
+			Objects.equals(owner, account.owner) &&
+			Objects.equals(version, account.version);
 	}
 
 	@Override
 	public int hashCode() {
 
-		return Objects.hash(id, name, priority, owner);
+		return Objects.hash(id, name, priority, owner, version);
 	}
 	
 	public Long getId() {
@@ -87,6 +93,14 @@ public class Account implements Identifiable<Long> {
 	public void setOwner(String owner) {
 		this.owner = owner;
 	}
+
+	public Long getVersion() {
+		return version;
+	}
+
+	public void setVersion(Long version) {
+		this.version = version;
+	}
 	
 	@Override
 	public String toString() {
@@ -95,6 +109,7 @@ public class Account implements Identifiable<Long> {
 			", name='" + name + '\'' +
 			", priority='" + priority + '\'' +
 			", owner='" + owner + '\'' +
+			", version='" + version + '\'' +
 			'}';
 	}
 }
