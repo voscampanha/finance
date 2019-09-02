@@ -15,7 +15,8 @@ class App extends React.Component {
 
 	constructor(props) {
 		super(props);
-		this.state = { accounts: [], attributes: [], page: 1, pageSize: 1, links: {} };
+		this.state = { accounts: [], attributes: [], page: 1, pageSize: 10, links: {}
+			, loggedInManager: this.props.loggedInManager };
 		this.updatePageSize = this.updatePageSize.bind(this);
 		this.onCreate = this.onCreate.bind(this);
 		this.onUpdate = this.onUpdate.bind(this);
@@ -26,6 +27,7 @@ class App extends React.Component {
 	}
 
 	loadFromServer(pageSize) {
+		debugger;
 		follow(client, root, [
 			{ rel: 'accounts', params: { size: pageSize } }]
 		).then(accountCollection => {
@@ -34,22 +36,37 @@ class App extends React.Component {
 				path: accountCollection.entity._links.profile.href,
 				headers: { 'Accept': 'application/schema+json' }
 			}).then(schema => {
+				Object.keys(schema.entity.properties).forEach(function (property) {
+					if (schema.entity.properties[property].hasOwnProperty('format') &&
+						schema.entity.properties[property].format === 'uri') {
+						delete schema.entity.properties[property];
+					}
+					else if (schema.entity.properties[property].hasOwnProperty('$ref')) {
+						delete schema.entity.properties[property];
+					}
+				});
+
 				this.schema = schema.entity;
 				this.links = accountCollection.entity._links;
 				return accountCollection;
 			});
 		}).then(accountCollection => {
-			return accountCollection.entity._embedded.accounts.map(account =>
+			this.page = accountCollection.entity.page;
+			var clientReturn=  accountCollection.entity._embedded.accounts.map(account =>
 				client({
 						method: 'GET',
 						path: account._links.self.href
 				})
 				
 			);
+			console.log('fffffffff',clientReturn)
+			return clientReturn;
 		}).then(accountPromises => {
 			return when.all(accountPromises);
 		}).done(accounts => {
+			console.log( 'adddddd', accounts)
 			this.setState({
+				page: this.page,
 				accounts: accounts,
 				attributes: Object.keys(this.schema.properties),
 				pageSize: pageSize,
@@ -70,22 +87,33 @@ class App extends React.Component {
 	}
 
 	onUpdate(account, updatedAccount) {
-		client({
-			method: 'PUT',
-			path: account.entity._links.self.href,
-			entity: updatedAccount,
-			headers: {
-				'Content-Type': 'application/json',
-				'If-Match': account.headers.Etag
-			}
-		}).done(response => {
-			this.loadFromServer(this.state.pageSize);
-		}, response => {
-			if (response.status.code === 412) {
-				alert('DENIED: Unable to update ' +
-					account.entity._links.self.href + '. Your copy is stale.');
-			}
-		});
+		console.log('onupdate', account)
+		if(account.entity.user.name === this.state.loggedInManager) {
+			updatedAccount["user"] = account.entity.user;
+			client({
+				method: 'PUT',
+				path: account.entity._links.self.href,
+				entity: updatedAccount,
+				headers: {
+					'Content-Type': 'application/json',
+					'If-Match': account.headers.Etag
+				}
+			}).done(response => {
+				/* Let the websocket handler update the state */
+			}, response => {
+				if (response.status.code === 403) {
+					alert('ACCESS DENIED: You are not authorized to update ' +
+						account.entity._links.self.href);
+				}
+				if (response.status.code === 412) {
+					alert('DENIED: Unable to update ' +
+						account.entity._links.self.href + '. Your copy is stale.');
+				}
+			});
+		}
+		else {
+			alert("You are not authorized to update");
+		}
 	}
 
 	onNavigate(navUri) {
@@ -94,7 +122,7 @@ class App extends React.Component {
 			path: navUri
 		}).then(accountCollection => {
 			this.links = accountCollection.entity._links;
-
+			this.page = accountCollection.entity.page;
 			return accountCollection.entity._embedded.accounts.map(account =>
 					client({
 						method: 'GET',
@@ -105,6 +133,7 @@ class App extends React.Component {
 			return when.all(accountPromises);
 		}).done(accounts => {
 			this.setState({
+				page: this.page,
 				accounts: accounts,
 				attributes: Object.keys(this.schema.properties),
 				pageSize: this.state.pageSize,
@@ -114,8 +143,12 @@ class App extends React.Component {
 	}
 
 	onDelete(account) {
-		client({ method: 'DELETE', path: account.entity._links.self.href }).done(response => {
-			this.loadFromServer(this.state.pageSize);
+		client({ method: 'DELETE', path: account.entity._links.self.href }).done(response => {/* let the websocket handle updating the UI */},
+			response => {
+				if (response.status.code === 403) {
+					alert('ACCESS DENIED: You are not authorized to delete ' +
+						account.entity._links.self.href);
+				}
 		});
 	}
 
@@ -181,14 +214,16 @@ class App extends React.Component {
 		return (
 			<div>
 				<CreateDialog attributes={this.state.attributes} onCreate={this.onCreate} />
-				<AccountList accounts={this.state.accounts} 
+				<AccountList page={this.state.page}
+					accounts={this.state.accounts} 
 					links={this.state.links}
 					pageSize={this.state.pageSize}
 					attributes={this.state.attributes}
 					onNavigate={this.onNavigate}
 					onUpdate={this.onUpdate}
 					onDelete={this.onDelete}
-					updatePageSize={this.updatePageSize} />
+					updatePageSize={this.updatePageSize}
+					loggedInManager={this.state.loggedInManager} />
 			</div>
 		)
 	}
@@ -275,23 +310,35 @@ class UpdateDialog extends React.Component {
 
 		const dialogId = "updateAccount-" + this.props.account.entity._links.self.href;
 
-		return (
-			<div key={this.props.account.entity._links.self.href}>
-				<a href={"#" + dialogId}>Update</a>
-				<div id={dialogId} className="modalDialog">
+		console.log('render update dialog', this.props.account)
+		const isManagerCorrect = this.props.account.entity.user.name == this.props.loggedInManager;
+
+		if (isManagerCorrect === false) {
+			return (
 					<div>
-						<a href="#" title="Close" className="close">X</a>
-
-						<h2>Update an account</h2>
-
-						<form>
-							{inputs}
-							<button onClick={this.handleSubmit}>Update</button>
-						</form>
+						<a>Not Your Account</a>
+					</div>
+				)
+		} else {
+			return (
+				<div>
+					<a href={"#" + dialogId}>Update</a>
+	
+					<div id={dialogId} className="modalDialog">
+						<div>
+							<a href="#" title="Close" className="close">X</a>
+	
+							<h2>Update an account</h2>
+	
+							<form>
+								{inputs}
+								<button onClick={this.handleSubmit}>Update</button>
+							</form>
+						</div>
 					</div>
 				</div>
-			</div>
-		)
+			)
+		}
 	}
 
 };
@@ -339,12 +386,17 @@ class AccountList extends React.Component {
 	}
 
 	render() {
+
+		const pageInfo = this.props.page.hasOwnProperty("number") ?
+		<h3>Accounts - Page {this.props.page.number + 1} of {this.props.page.totalPages}</h3> : null;
+
 		const accounts = this.props.accounts.map(account =>
 			<Account key={account.entity._links.self.href}
 				account={account}
 				attributes={this.props.attributes}
 				onUpdate={this.props.onUpdate}
-				onDelete={this.props.onDelete}/>
+				onDelete={this.props.onDelete}
+				loggedInManager={this.props.loggedInManager}/>
 		);
 
 		const navLinks = [];
@@ -363,6 +415,7 @@ class AccountList extends React.Component {
 
 		return (
 			<div>
+				{pageInfo}
 				<input ref="pageSize" defaultValue={this.props.pageSize} onInput={this.handleInput} />
 				<table>
 					<tbody>
@@ -370,6 +423,9 @@ class AccountList extends React.Component {
 							<th>Name</th>
 							<th>Owner</th>
 							<th>Priority</th>
+							<th>Manager</th>
+							<th></th>
+							<th></th>
 						</tr>
 						{accounts}
 					</tbody>
@@ -393,15 +449,18 @@ class Account extends React.Component {
 	}
 
 	render() {
+		console.log('render accoung', this.props.account)
 		return (
 			<tr>
 				<td>{this.props.account.entity.name}</td>
 				<td>{this.props.account.entity.owner}</td>
 				<td>{this.props.account.entity.priority}</td>
+				<td>{this.props.account.entity.user.name}</td>
 				<td>
 					<UpdateDialog account={this.props.account}
 								  attributes={this.props.attributes}
-								  onUpdate={this.props.onUpdate}/>
+								  onUpdate={this.props.onUpdate}
+								  loggedInManager={this.props.loggedInManager}/>
 				</td>
 				<td>
 					<button onClick={this.handleDelete}>Delete</button>
@@ -412,6 +471,6 @@ class Account extends React.Component {
 }
 
 ReactDOM.render(
-	<App />,
+	<App loggedInManager={document.getElementById('username').innerHTML } />,
 	document.getElementById('react')
 )

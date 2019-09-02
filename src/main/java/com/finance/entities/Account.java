@@ -7,6 +7,7 @@ import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
@@ -36,12 +37,15 @@ public class Account implements Identifiable<Long> {
 	
 	private @Version @JsonIgnore Long version;
 
+	private @ManyToOne UserApp user;
+
 	private Account() {}
 
-	public Account(String name, int priority, String owner) {
+	public Account(String name, int priority, String owner, UserApp user) {
 		this.name = name;
 		this.priority = priority;
 		this.owner = owner;
+		this.user = user;
 	}
 
 	@Override
@@ -53,13 +57,14 @@ public class Account implements Identifiable<Long> {
 			Objects.equals(name, account.name) &&
 			Objects.equals(priority, account.priority) &&
 			Objects.equals(owner, account.owner) &&
-			Objects.equals(version, account.version);
+			Objects.equals(version, account.version) &&
+			Objects.deepEquals(user, account.user);
 	}
 
 	@Override
 	public int hashCode() {
 
-		return Objects.hash(id, name, priority, owner, version);
+		return Objects.hash(id, name, priority, owner, version, user);
 	}
 	
 	public Long getId() {
@@ -102,6 +107,14 @@ public class Account implements Identifiable<Long> {
 		this.version = version;
 	}
 	
+	public UserApp getUser() {
+		return user;
+	}
+
+	public void setUser(UserApp user) {
+		this.user = user;
+	}
+	
 	@Override
 	public String toString() {
 		return "Account{" +
@@ -109,7 +122,8 @@ public class Account implements Identifiable<Long> {
 			", name='" + name + '\'' +
 			", priority='" + priority + '\'' +
 			", owner='" + owner + '\'' +
-			", version='" + version + '\'' +
+			", version=" + version +
+			", user=" + user +
 			'}';
 	}
 }
