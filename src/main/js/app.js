@@ -7,18 +7,22 @@ const client = require('./client');
 
 const follow = require('./follow');
 
+const stompClient = require('./websocket-listener');
+
 const root = '/api';
 
 class App extends React.Component {
 
 	constructor(props) {
 		super(props);
-		this.state = { accounts: [], attributes: [], pageSize: 1, links: {} };
+		this.state = { accounts: [], attributes: [], page: 1, pageSize: 1, links: {} };
 		this.updatePageSize = this.updatePageSize.bind(this);
 		this.onCreate = this.onCreate.bind(this);
 		this.onUpdate = this.onUpdate.bind(this);
 		this.onDelete = this.onDelete.bind(this);
 		this.onNavigate = this.onNavigate.bind(this);
+		this.refreshCurrentPage = this.refreshCurrentPage.bind(this);
+		this.refreshAndGoToLastPage = this.refreshAndGoToLastPage.bind(this);
 	}
 
 	loadFromServer(pageSize) {
@@ -55,23 +59,14 @@ class App extends React.Component {
 	}
 
 	onCreate(newAccount) {
-		follow(client, root, ['accounts']).then(accountCollection => {
-			return client({
+		follow(client, root, ['accounts']).done(response => {
+			client({
 				method: 'POST',
-				path: accountCollection.entity._links.self.href,
+				path: response.entity._links.self.href,
 				entity: newAccount,
 				headers: { 'Content-Type': 'application/json' }
 			})
-		}).then(response => {
-			return follow(client, root, [
-				{ rel: 'accounts', params: { 'size': this.state.pageSize } }]);
-		}).done(response => {
-			if (typeof response.entity._links.last !== "undefined") {
-				this.onNavigate(response.entity._links.last.href);
-			} else {
-				this.onNavigate(response.entity._links.self.href);
-			}
-		});
+		})
 	}
 
 	onUpdate(account, updatedAccount) {
@@ -130,8 +125,56 @@ class App extends React.Component {
 		}
 	}
 
+	refreshAndGoToLastPage(message) {
+		follow(client, root, [{
+			rel: 'accounts',
+			params: {size: this.state.pageSize}
+		}]).done(response => {
+			if (response.entity._links.last !== undefined) {
+				this.onNavigate(response.entity._links.last.href);
+			} else {
+				this.onNavigate(response.entity._links.self.href);
+			}
+		})
+	}
+	
+	refreshCurrentPage(message) {
+		follow(client, root, [{
+			rel: 'accounts',
+			params: {
+				size: this.state.pageSize,
+				page: this.state.page.number
+			}
+		}]).then(accountCollection => {
+			this.links = accountCollection.entity._links;
+			this.page = accountCollection.entity.page;
+	
+			return accountCollection.entity._embedded.accounts.map(account => {
+				return client({
+					method: 'GET',
+					path: account._links.self.href
+				})
+			});
+		}).then(accountPromises => {
+			return when.all(accountPromises);
+		}).then(accounts => {
+			this.setState({
+				page: this.page,
+				accounts: accounts,
+				attributes: Object.keys(this.schema.properties),
+				pageSize: this.state.pageSize,
+				links: this.links
+			});
+		});
+	}
+
 	componentDidMount() {
 		this.loadFromServer(this.state.pageSize);
+		stompClient.register([
+			{route: '/topic/newAccount', callback: this.refreshAndGoToLastPage},
+			{route: '/topic/updateAccount', callback: this.refreshCurrentPage},
+			{route: '/topic/deleteAccount', callback: this.refreshCurrentPage}
+		]);
 	}
 
 	render() {
