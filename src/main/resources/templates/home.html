@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="/main.css" />
 </head>
 <body>
-	   <!-- tag::logout[] -->
+    <!-- tag::logout[] -->
     <div>
         Hello, <span id="username" th:text="${#authentication.name}">user</span>.
         <form th:action="@{/logout}" method="post">
