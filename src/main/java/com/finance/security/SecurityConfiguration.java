@@ -12,13 +12,13 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 
-import com.finance.repositories.SpringDataJpaUserDetailsService;
+import com.finance.repositories.UserDetailsServiceImpl;
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled = true)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	@Autowired
-	SpringDataJpaUserDetailsService userDetailsService;
+	UserDetailsServiceImpl userDetailsService;
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {

@@ -8,10 +8,10 @@ import org.springframework.context.annotation.Import;
 import springfox.documentation.spring.data.rest.configuration.SpringDataRestConfiguration;
 import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
 
-@EnableAutoConfiguration
 @SpringBootApplication
 @EnableSwagger2WebMvc
 @Import(SpringDataRestConfiguration.class)
+@EnableAutoConfiguration
 public class FinanceApplication {
 
 	public static void main(String[] args) {

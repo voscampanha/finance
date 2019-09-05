@@ -6,6 +6,10 @@ import java.util.Objects;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -13,14 +17,20 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = "email", name = "user_uk"))
 public class UserApp {
 
 	public static final PasswordEncoder PASSWORD_ENCODER = new BCryptPasswordEncoder();
 
 	private @Id @GeneratedValue Long id;
 
+	@NotEmpty
 	private String name;
+	
+	@Email(message = "Email should be valid")
+	private String email;
 
+	@NotEmpty
 	private @JsonIgnore String password;
 
 	private String[] roles;
@@ -29,11 +39,14 @@ public class UserApp {
 		this.password = PASSWORD_ENCODER.encode(password);
 	}
 
-	protected UserApp() {}
+	protected UserApp() {
+		this.roles = new String[] {"ROLE_USER"};
+	}
 
-	public UserApp(String name, String password, String... roles) {
+	public UserApp(String name, String email, String password, String... roles) {
 
 		this.name = name;
+		this.email = email;
 		this.setPassword(password);
 		this.roles = roles;
 	}
@@ -45,6 +58,7 @@ public class UserApp {
 		UserApp user = (UserApp) o;
 		return Objects.equals(id, user.id) &&
 			Objects.equals(name, user.name) &&
+			Objects.equals(email, user.email) &&			
 			Objects.equals(password, user.password) &&
 			Arrays.equals(roles, user.roles);
 	}
@@ -52,7 +66,7 @@ public class UserApp {
 	@Override
 	public int hashCode() {
 
-		int result = Objects.hash(id, name, password);
+		int result = Objects.hash(id, name, email, password);
 		result = 31 * result + Arrays.hashCode(roles);
 		return result;
 	}
@@ -73,6 +87,13 @@ public class UserApp {
 		this.name = name;
 	}
 
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
 	public String getPassword() {
 		return password;
 	}
@@ -90,6 +111,7 @@ public class UserApp {
 		return "User{" +
 			"id=" + id +
 			", name='" + name + '\'' +
+			", email='" + email + '\'' +
 			", roles=" + Arrays.toString(roles) +
 			'}';
 	}

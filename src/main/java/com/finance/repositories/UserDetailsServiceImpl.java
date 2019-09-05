@@ -14,12 +14,12 @@ import org.springframework.stereotype.Component;
 import com.finance.entities.UserApp;
 
 @Component
-public class SpringDataJpaUserDetailsService implements UserDetailsService {
+public class UserDetailsServiceImpl implements UserDetailsService {
 
 	private final UserAppRepository repository;
 
 	@Autowired
-	public SpringDataJpaUserDetailsService(UserAppRepository repository) {
+	public UserDetailsServiceImpl(UserAppRepository repository) {
 		this.repository = repository;
 	}
 
