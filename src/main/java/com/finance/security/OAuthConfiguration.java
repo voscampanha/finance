@@ -1,4 +1,4 @@
-package com.finance.config;
+package com.finance.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

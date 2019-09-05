@@ -1,4 +1,4 @@
-package com.finance.interfaces;
+package com.finance.repositories;
 
 import java.util.Arrays;
 

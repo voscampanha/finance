@@ -1,4 +1,4 @@
-package com.finance.config;
+package com.finance.websocket;
 
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.stereotype.Component;

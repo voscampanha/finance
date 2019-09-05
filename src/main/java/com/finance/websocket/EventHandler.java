@@ -1,6 +1,6 @@
-package com.finance.config;
+package com.finance.websocket;
 
-import static com.finance.config.WebSocketConfiguration.*;
+import static com.finance.websocket.WebSocketConfiguration.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.annotation.HandleAfterCreate;

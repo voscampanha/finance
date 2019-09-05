@@ -1,4 +1,4 @@
-package com.finance.interfaces;
+package com.finance.repositories;
 
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;

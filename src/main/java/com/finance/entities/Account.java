@@ -32,19 +32,15 @@ public class Account implements Identifiable<Long> {
 	@NotNull
 	private int priority;
 	
-	@NotNull
-	private String owner;
-	
 	private @Version @JsonIgnore Long version;
 
 	private @ManyToOne UserApp user;
 
 	private Account() {}
 
-	public Account(String name, int priority, String owner, UserApp user) {
+	public Account(String name, int priority, UserApp user) {
 		this.name = name;
 		this.priority = priority;
-		this.owner = owner;
 		this.user = user;
 	}
 
@@ -56,7 +52,6 @@ public class Account implements Identifiable<Long> {
 		return Objects.equals(id, account.id) &&
 			Objects.equals(name, account.name) &&
 			Objects.equals(priority, account.priority) &&
-			Objects.equals(owner, account.owner) &&
 			Objects.equals(version, account.version) &&
 			Objects.deepEquals(user, account.user);
 	}
@@ -64,7 +59,7 @@ public class Account implements Identifiable<Long> {
 	@Override
 	public int hashCode() {
 
-		return Objects.hash(id, name, priority, owner, version, user);
+		return Objects.hash(id, name, priority, version, user);
 	}
 	
 	public Long getId() {
@@ -91,14 +86,6 @@ public class Account implements Identifiable<Long> {
 		this.priority = priority;
 	}
 
-	public String getOwner() {
-		return owner;
-	}
-
-	public void setOwner(String owner) {
-		this.owner = owner;
-	}
-
 	public Long getVersion() {
 		return version;
 	}
@@ -121,7 +108,6 @@ public class Account implements Identifiable<Long> {
 			"id=" + id +
 			", name='" + name + '\'' +
 			", priority='" + priority + '\'' +
-			", owner='" + owner + '\'' +
 			", version=" + version +
 			", user=" + user +
 			'}';

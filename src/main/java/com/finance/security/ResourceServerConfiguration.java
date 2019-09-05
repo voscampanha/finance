@@ -1,4 +1,4 @@
-package com.finance.config;
+package com.finance.security;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,7 +19,7 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
 	@Override
 	public void configure(HttpSecurity http) throws Exception {
 		http.authorizeRequests()
-				.antMatchers("/built/**", "/main.css", "/swagger**/**", "/", "/payroll/**", "/v2/**", "/webjars/**", "/error**").permitAll()
+				.antMatchers("/built/**", "/main.css", "/swagger**/**", "/", "/login", "/payroll/**", "/v2/**", "/webjars/**", "/error**").permitAll()
 				.anyRequest().authenticated().anyRequest().authenticated();
 	}
 }
