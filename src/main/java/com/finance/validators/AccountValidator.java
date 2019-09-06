@@ -7,16 +7,20 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 import com.finance.entities.Account;
+import com.finance.repositories.AccountRepository;
 import com.finance.repositories.UserAppRepository;
 
 @Component("beforeCreateAccountValidator")
 public class AccountValidator implements Validator {
 	
-	private final UserAppRepository repository;
+	private final UserAppRepository userRepository;
+	
+	private final AccountRepository accountRepository;
 
 	@Autowired
-	public AccountValidator(UserAppRepository repository) {
-		this.repository = repository;
+	public AccountValidator(UserAppRepository userRepository, AccountRepository accountRepository) {
+		this.userRepository = userRepository;
+		this.accountRepository = accountRepository;
 	}
 
 	@Override
@@ -33,8 +37,14 @@ public class AccountValidator implements Validator {
 		if (StringUtils.isEmpty(account.getPriority()) || 1 > account.getPriority()) {
 			errors.rejectValue("priority", "priority.invalid");
 		}
-		if (account.getUser() == null || account.getUser().getId() == null || repository.findById(account.getUser().getId()) == null) {
+		if (account.getUser() == null || account.getUser().getId() == null || userRepository.findById(account.getUser().getId()) == null) {
 			errors.rejectValue("user", "user.invalid");
+		}
+		if(!StringUtils.isEmpty(account.getName()) && 
+				account.getUser().getId() != null && 
+				accountRepository.findByNameAndUser(
+						account.getName(), account.getUser().getId()) != null ) {
+			errors.rejectValue("name", "name.exists");			
 		}
 	}
 
