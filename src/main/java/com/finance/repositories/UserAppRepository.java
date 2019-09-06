@@ -12,4 +12,5 @@ public interface UserAppRepository extends Repository<UserApp, Long> {
 
 	UserApp findByName(String name);
 
+	UserApp findById(Long id);
 }

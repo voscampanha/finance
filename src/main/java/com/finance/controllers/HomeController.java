@@ -10,9 +10,4 @@ public class HomeController {
 		return "index";
 	}
     
-//	@RequestMapping("/callback")
-//    public String callback() {
-//        System.out.println("redirecting to home page");
-//        return "/home";
-//    }
 }

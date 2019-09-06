@@ -2,6 +2,7 @@ package com.finance.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,7 +30,16 @@ public class OAuthConfiguration extends AuthorizationServerConfigurerAdapter {
 	
 	@Autowired
 	UserDetailsService userDetailsService;
-
+	
+	@Value("${oauth.clientId}")
+	private String clientID;
+	
+	@Value("${oauth.secret}")
+	private String secret;
+	
+	@Value("${oauth.signingKey}")
+	private String signingKey;
+	
 	@Override
 	public void configure(final AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
 		oauthServer.tokenKeyAccess("permitAll()").checkTokenAccess("isAuthenticated()");
@@ -37,7 +47,7 @@ public class OAuthConfiguration extends AuthorizationServerConfigurerAdapter {
 
 	@Override
 	public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-		clients.inMemory().withClient("fooClientId").secret(passwordEncoder.encode("secret"))
+		clients.inMemory().withClient(clientID).secret(passwordEncoder.encode(secret))
 				.authorizedGrantTypes("password", "authorization_code", "refresh_token").scopes("read", "write")
 				.autoApprove(true);
 	}
@@ -56,7 +66,7 @@ public class OAuthConfiguration extends AuthorizationServerConfigurerAdapter {
 	@Bean
 	public JwtAccessTokenConverter defaultAccessTokenConverter() {
 		JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
-		converter.setSigningKey("123");
+		converter.setSigningKey(signingKey);
 		return converter;
 	}
 }
