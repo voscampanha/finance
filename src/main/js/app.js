@@ -34,7 +34,9 @@ class App extends React.Component {
 			return client({
 				method: 'GET',
 				path: accountCollection.entity._links.profile.href,
-				headers: { 'Accept': 'application/schema+json' }
+				headers: { 'Accept': 'application/schema+json',
+						   'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Njc4MzQwNDgsInVzZXJfbmFtZSI6InZhbmVzc2EiLCJhdXRob3JpdGllcyI6WyJST0xFX0FETUlOIl0sImp0aSI6IjAzMDY1NmQyLTUzYTUtNDkxNS1iM2ZjLTQxOTc5MTMxNmQ1ZSIsImNsaWVudF9pZCI6ImZvb0NsaWVudElkIiwic2NvcGUiOlsicmVhZCIsIndyaXRlIl19.sdoECnSgOMTGsplvGPxCmHBrcbp6Eswkpo-2onQqWAA' 
+						}
 			}).then(schema => {
 				Object.keys(schema.entity.properties).forEach(function (property) {
 					if (schema.entity.properties[property].hasOwnProperty('format') &&
@@ -55,16 +57,17 @@ class App extends React.Component {
 			var clientReturn=  accountCollection.entity._embedded.accounts.map(account =>
 				client({
 						method: 'GET',
-						path: account._links.self.href
+						path: account._links.self.href,
+						headers: { 
+						   'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Njc4MzQwNDgsInVzZXJfbmFtZSI6InZhbmVzc2EiLCJhdXRob3JpdGllcyI6WyJST0xFX0FETUlOIl0sImp0aSI6IjAzMDY1NmQyLTUzYTUtNDkxNS1iM2ZjLTQxOTc5MTMxNmQ1ZSIsImNsaWVudF9pZCI6ImZvb0NsaWVudElkIiwic2NvcGUiOlsicmVhZCIsIndyaXRlIl19.sdoECnSgOMTGsplvGPxCmHBrcbp6Eswkpo-2onQqWAA' 
+						}
 				})
 				
 			);
-			console.log('fffffffff',clientReturn)
 			return clientReturn;
 		}).then(accountPromises => {
 			return when.all(accountPromises);
 		}).done(accounts => {
-			console.log( 'adddddd', accounts)
 			this.setState({
 				page: this.page,
 				accounts: accounts,
@@ -87,7 +90,6 @@ class App extends React.Component {
 	}
 
 	onUpdate(account, updatedAccount) {
-		console.log('onupdate', account)
 		if(account.entity.user.name === this.state.loggedInManager) {
 			updatedAccount["user"] = account.entity.user;
 			client({
@@ -310,7 +312,6 @@ class UpdateDialog extends React.Component {
 
 		const dialogId = "updateAccount-" + this.props.account.entity._links.self.href;
 
-		console.log('render update dialog', this.props.account)
 		const isManagerCorrect = this.props.account.entity.user.name == this.props.loggedInManager;
 
 		if (isManagerCorrect === false) {
@@ -421,9 +422,8 @@ class AccountList extends React.Component {
 					<tbody>
 						<tr>
 							<th>Name</th>
-							<th>Owner</th>
 							<th>Priority</th>
-							<th>Manager</th>
+							<th>User</th>
 							<th></th>
 							<th></th>
 						</tr>
@@ -449,11 +449,9 @@ class Account extends React.Component {
 	}
 
 	render() {
-		console.log('render accoung', this.props.account)
 		return (
 			<tr>
 				<td>{this.props.account.entity.name}</td>
-				<td>{this.props.account.entity.owner}</td>
 				<td>{this.props.account.entity.priority}</td>
 				<td>{this.props.account.entity.user.name}</td>
 				<td>
