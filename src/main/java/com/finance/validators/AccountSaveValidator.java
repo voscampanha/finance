@@ -10,15 +10,15 @@ import com.finance.entities.Account;
 import com.finance.repositories.AccountRepository;
 import com.finance.repositories.UserAppRepository;
 
-@Component("beforeCreateAccountValidator")
-public class AccountCreateValidator implements Validator {
+@Component("beforeSaveAccountValidator")
+public class AccountSaveValidator implements Validator {
 	
 	private final UserAppRepository userRepository;
 	
 	private final AccountRepository accountRepository;
 
 	@Autowired
-	public AccountCreateValidator(UserAppRepository userRepository, AccountRepository accountRepository) {
+	public AccountSaveValidator(UserAppRepository userRepository, AccountRepository accountRepository) {
 		this.userRepository = userRepository;
 		this.accountRepository = accountRepository;
 	}
@@ -41,6 +41,7 @@ public class AccountCreateValidator implements Validator {
 			errors.rejectValue("user", "user.invalid");
 		}
 		if(!StringUtils.isEmpty(account.getName()) && 
+				account.getUser() != null &&
 				account.getUser().getId() != null && 
 				accountRepository.findByNameAndUser(
 						account.getName(), account.getUser().getId()) != null ) {

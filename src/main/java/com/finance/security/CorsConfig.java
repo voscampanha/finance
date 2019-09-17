@@ -13,7 +13,8 @@ public class CorsConfig {
 //IMPORTANT: it has to be a normal configuration class, 
 //not extending WebMvcConfigurerAdapter or other Spring Security class
     @Bean
-    public FilterRegistrationBean customCorsFilter() {
+    public FilterRegistrationBean corsFilterRegistrationBean() {
+    	System.out.println("\n\n\nentrou no corsconfig");
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);

@@ -8,15 +8,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import springfox.documentation.builders.ApiInfoBuilder;
+import springfox.documentation.builders.AuthorizationCodeGrantBuilder;
 import springfox.documentation.builders.OAuthBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.service.ApiInfo;
 import springfox.documentation.service.AuthorizationScope;
 import springfox.documentation.service.Contact;
 import springfox.documentation.service.GrantType;
-import springfox.documentation.service.ResourceOwnerPasswordCredentialsGrant;
 import springfox.documentation.service.SecurityReference;
 import springfox.documentation.service.SecurityScheme;
+import springfox.documentation.service.TokenEndpoint;
+import springfox.documentation.service.TokenRequestEndpoint;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spi.service.contexts.SecurityContext;
 import springfox.documentation.spring.web.plugins.Docket;
@@ -26,12 +28,12 @@ import springfox.documentation.swagger.web.SecurityConfigurationBuilder;
 
 @Configuration
 public class SpringfoxConfiguration {
-	private static final String AUTH_SERVER = "https://financevos.herokuapp.com";
+	private static final String AUTH_SERVER = "http://localhost:8080";
 
-	@Value("${oauth.clientId}")
+	@Value("${security.oauth2.client.client-id}")
 	private String clientID;
 	
-	@Value("${oauth.secret}")
+	@Value("${security.oauth2.client.client-secret}")
 	private String secret;
 	
 	
@@ -57,11 +59,13 @@ public class SpringfoxConfiguration {
     
     @Bean
     public SecurityConfiguration security() {
+        
         return SecurityConfigurationBuilder.builder()
             .clientId(clientID)
             .clientSecret(secret)
             .scopeSeparator(" ")
-            .useBasicAuthenticationWithAccessCodeGrant(true)
+            .enableCsrfSupport(false)
+            .useBasicAuthenticationWithAccessCodeGrant(false)
             .build();
     }
     
@@ -74,7 +78,11 @@ public class SpringfoxConfiguration {
     }
     
     private SecurityScheme securityScheme() {
-        GrantType grantType = new ResourceOwnerPasswordCredentialsGrant(AUTH_SERVER + "/oauth/token");
+        GrantType grantType = new AuthorizationCodeGrantBuilder()
+        		.tokenEndpoint(new TokenEndpoint("https://www.googleapis.com/oauth2/v3/token", "access_token"))
+        		.tokenRequestEndpoint(
+        				new TokenRequestEndpoint("https://accounts.google.com/o/oauth2/auth", clientID, secret))
+        					.build();
      
         SecurityScheme oauth = new OAuthBuilder().name("spring_oauth")
             .grantTypes(Arrays.asList(grantType))
@@ -85,9 +93,9 @@ public class SpringfoxConfiguration {
     
     private AuthorizationScope[] scopes() {
         AuthorizationScope[] scopes = { 
-          new AuthorizationScope("read", "for read operations"), 
-          new AuthorizationScope("write", "for write operations"), 
-          new AuthorizationScope("foo", "Access foo API") };
+          new AuthorizationScope("email", "for read operations"), 
+          new AuthorizationScope("profile", "for write operations")};
+//          new AuthorizationScope("api", "Access API") };
         return scopes;
     }
     	
