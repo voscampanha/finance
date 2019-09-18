@@ -8,7 +8,7 @@
 <body>
 	   <!-- tag::logout[] -->
     <div>
-        Hello, <span id="username" th:text="${#authentication.principal}">user</span>.
+        Hello, <span id="username" th:text="${#authentication.principal.name}">user</span>.
         <form th:action="@{/logout}" method="post">
             <input type="submit" value="Log Out"/>
         </form>

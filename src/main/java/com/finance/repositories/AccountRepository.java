@@ -8,14 +8,14 @@ import org.springframework.stereotype.Repository;
 
 import com.finance.entities.Account;
 
-//@PreAuthorize("hasRole('ROLE_ADMIN')")
+@PreAuthorize("hasRole('ROLE_USER')")
 @Repository
 public interface AccountRepository extends PagingAndSortingRepository<Account, Long> {
 	@Query("SELECT a FROM Account a WHERE a.name = ?1 AND a.user.id = ?2")
     Account findByNameAndUser(String name, Long userId);
 	
 	@Override
-	@PreAuthorize("#account?.user == null or #account?.user?.name == authentication?.name")
+	@PreAuthorize("#account?.id == null or @accountRepository.findById(#account?.id)?.user?.email == authentication?.principal.email")
 	Account save(@Param("account") Account account);
 //
 //	@Override

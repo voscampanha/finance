@@ -36,6 +36,12 @@ public class SpringfoxConfiguration {
 	@Value("${security.oauth2.client.client-secret}")
 	private String secret;
 	
+	@Value("${security.oauth2.client.access-token-uri}")
+	private String accessTokenUrl;
+	
+	@Value("${security.oauth2.client.user-authorization-uri}")
+	private String userAuthorizationUrl;
+	
 	
 	
     @Bean
@@ -79,9 +85,9 @@ public class SpringfoxConfiguration {
     
     private SecurityScheme securityScheme() {
         GrantType grantType = new AuthorizationCodeGrantBuilder()
-        		.tokenEndpoint(new TokenEndpoint("https://www.googleapis.com/oauth2/v3/token", "access_token"))
+        		.tokenEndpoint(new TokenEndpoint(accessTokenUrl, "access_token"))
         		.tokenRequestEndpoint(
-        				new TokenRequestEndpoint("https://accounts.google.com/o/oauth2/auth", clientID, secret))
+        				new TokenRequestEndpoint(userAuthorizationUrl, clientID, secret))
         					.build();
      
         SecurityScheme oauth = new OAuthBuilder().name("spring_oauth")
@@ -93,9 +99,8 @@ public class SpringfoxConfiguration {
     
     private AuthorizationScope[] scopes() {
         AuthorizationScope[] scopes = { 
-          new AuthorizationScope("email", "for read operations"), 
-          new AuthorizationScope("profile", "for write operations")};
-//          new AuthorizationScope("api", "Access API") };
+          new AuthorizationScope("profile", "for read operations"), 
+          new AuthorizationScope("email", "for write operations")};
         return scopes;
     }
     	

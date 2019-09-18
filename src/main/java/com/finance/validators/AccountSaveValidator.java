@@ -37,7 +37,7 @@ public class AccountSaveValidator implements Validator {
 		if (StringUtils.isEmpty(account.getPriority()) || 1 > account.getPriority()) {
 			errors.rejectValue("priority", "priority.invalid");
 		}
-		if (account.getUser() == null || account.getUser().getId() == null || userRepository.findById(account.getUser().getId()) == null) {
+		if (account.getUser() == null || (account.getUser().getId() != null && userRepository.findById(account.getUser().getId()) == null)) {
 			errors.rejectValue("user", "user.invalid");
 		}
 		if(!StringUtils.isEmpty(account.getName()) && 
