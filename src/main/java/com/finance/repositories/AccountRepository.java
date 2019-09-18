@@ -3,6 +3,7 @@ package com.finance.repositories;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Repository;
 
@@ -15,7 +16,7 @@ public interface AccountRepository extends PagingAndSortingRepository<Account, L
     Account findByNameAndUser(String name, Long userId);
 	
 	@Override
-	@PreAuthorize("#account?.id == null or @accountRepository.findById(#account?.id)?.user?.email == authentication?.principal.email")
+	@PreAuthorize("#account?.user == null or #account?.user?.email == authentication?.principal.email")
 	Account save(@Param("account") Account account);
 //
 //	@Override
