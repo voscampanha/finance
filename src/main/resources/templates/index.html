@@ -1,22 +1,26 @@
 <!DOCTYPE html>
-<html xmlns:th="https://www.thymeleaf.org">
-<head lang="en">
-    <meta charset="UTF-8"/>
-    <title>ReactJS + Spring Data REST</title>
-    <link rel="stylesheet" href="/main.css" />
-</head>
-<body>
-	   <!-- tag::logout[] -->
-    <div>
-        Hello, <span id="username" th:text="${#authentication.principal.name}">user</span>.
-        <form th:action="@{/logout}" method="post">
-            <input type="submit" value="Log Out"/>
-        </form>
-    </div>
-    <!-- end::logout[] -->
-    <div id="react"></div>
-
-    <script src="built/bundle.js"></script>
-
-</body>
+<html xmlns:th="https://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+	<head lang="en">
+	    <meta charset="UTF-8"/>
+	    <title>ReactJS + Spring Data REST</title>
+	    <link rel="stylesheet" href="/main.css" />
+	</head>
+	<body>
+	    <div sec:authorize="{isAuthenticated()}">
+	        Hello, <span id="username" th:text="${#authentication.principal.name}">user</span>.
+	        
+	        <form th:action="@{/logout}" method="post">
+	            <input type="submit" value="Log Out"/>
+	        </form>
+    	    <div id="react"></div>
+	    </div>
+	     <div sec:authorize="{isAnonymous()}">
+	     	<span>Login With Google: <a href="/login">click here</a></span><br/>
+	     	<span>Link <a target="_blank" href="/swagger-ui.html">Swagger</a></span><br/>
+	     	<span>Link <a target="_blank" href="https://github.com/voscampanha/finance">Github</a></span>
+	     </div>
+	
+	    <script src="built/bundle.js"></script>
+	
+	</body>
 </html>
