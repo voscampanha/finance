@@ -17,7 +17,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 		http.cors().and().csrf().disable();
 		http.antMatcher("/**").authorizeRequests().antMatchers("/built/**", "/main.css","/", "/login**").permitAll().anyRequest().authenticated()
-				.and().formLogin().disable();
+			.and().logout().logoutSuccessUrl("/").and().formLogin().disable();
 	}
 
 	@Bean
